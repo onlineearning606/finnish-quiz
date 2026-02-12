@@ -14,42 +14,23 @@ const quiz = [
 ];
 
 export default function Home() {
-  const [screen, setScreen] = useState("name");
-  const [playerName, setPlayerName] = useState("");
   const [index, setIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
   const [score, setScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [finished, setFinished] = useState(false);
 
-  // Load leaderboard
   useEffect(() => {
     const saved = localStorage.getItem("leaderboard");
     if (saved) setLeaderboard(JSON.parse(saved));
   }, []);
 
-  // Save leaderboard
   useEffect(() => {
     localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
   }, [leaderboard]);
 
   const current = quiz[index];
-
-  function startQuiz() {
-    setIndex(0);
-    setScore(0);
-    setScreen("quiz");
-  }
-
-  function finishQuiz() {
-    const newEntry = {
-      name: playerName,
-      score,
-      date: new Date().toLocaleString()
-    };
-    setLeaderboard((prev) => [...prev, newEntry]);
-    setScreen("winner");
-  }
 
   function checkAnswer(e) {
     e.preventDefault();
@@ -77,8 +58,16 @@ export default function Home() {
       setFeedback("");
       setUserAnswer("");
 
-      if (index + 1 >= quiz.length) finishQuiz();
-      else setIndex((prev) => prev + 1);
+      if (index + 1 >= quiz.length) {
+        const newEntry = {
+          score,
+          date: new Date().toLocaleString()
+        };
+        setLeaderboard((prev) => [...prev, newEntry]);
+        setFinished(true);
+      } else {
+        setIndex((prev) => prev + 1);
+      }
     }, 1500);
   }
 
@@ -101,83 +90,7 @@ export default function Home() {
         border: "1px solid #1f2937"
       }}>
 
-        {/* NAME SCREEN */}
-        {screen === "name" && (
-          <>
-            <h1>Enter Your Name</h1>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Your name..."
-              style={{
-                width: "100%",
-                padding: "10px",
-                marginTop: "12px",
-                borderRadius: "8px",
-                border: "1px solid #374151",
-                background: "#020617",
-                color: "#e5e7eb"
-              }}
-            />
-            <button
-              onClick={() => setScreen("dashboard")}
-              disabled={!playerName.trim()}
-              style={{
-                width: "100%",
-                marginTop: "16px",
-                padding: "10px",
-                borderRadius: "8px",
-                background: playerName.trim() ? "#22c55e" : "#4b5563",
-                color: "#020617",
-                fontWeight: 600
-              }}
-            >
-              Continue
-            </button>
-          </>
-        )}
-
-        {/* DASHBOARD */}
-        {screen === "dashboard" && (
-          <>
-            <h1>Welcome, {playerName}!</h1>
-            <p style={{ color: "#9ca3af" }}>Ready to test your Finnish?</p>
-
-            <button
-              onClick={startQuiz}
-              style={{
-                width: "100%",
-                marginTop: "16px",
-                padding: "10px",
-                borderRadius: "8px",
-                background: "#22c55e",
-                color: "#020617",
-                fontWeight: 600
-              }}
-            >
-              Start Quiz
-            </button>
-
-            <button
-              onClick={() => setScreen("winner")}
-              style={{
-                width: "100%",
-                marginTop: "12px",
-                padding: "10px",
-                borderRadius: "8px",
-                background: "#3b82f6",
-                color: "#020617",
-                fontWeight: 600
-              }}
-            >
-              View Leaderboard
-            </button>
-          </>
-        )}
-
-        {/* QUIZ */}
-        {screen === "quiz" && (
+        {!finished && (
           <>
             <h2>Question {index + 1} / {quiz.length}</h2>
 
@@ -240,8 +153,7 @@ export default function Home() {
           </>
         )}
 
-        {/* LEADERBOARD */}
-        {screen === "winner" && (
+        {finished && (
           <>
             <h1>Leaderboard</h1>
 
@@ -251,12 +163,16 @@ export default function Home() {
               .sort((a, b) => b.score - a.score)
               .map((entry, i) => (
                 <p key={i}>
-                  <strong>{i + 1}. {entry.name}</strong> — {entry.score} points
+                  <strong>{i + 1}. Score:</strong> {entry.score}
                 </p>
               ))}
 
             <button
-              onClick={() => setScreen("dashboard")}
+              onClick={() => {
+                setIndex(0);
+                setScore(0);
+                setFinished(false);
+              }}
               style={{
                 width: "100%",
                 marginTop: "16px",
@@ -267,7 +183,7 @@ export default function Home() {
                 fontWeight: 600
               }}
             >
-              Back to Dashboard
+              Restart Quiz
             </button>
           </>
         )}
