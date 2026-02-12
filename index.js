@@ -14,7 +14,7 @@ const quiz = [
 ];
 
 export default function Home() {
-  const [screen, setScreen] = useState("name"); 
+  const [screen, setScreen] = useState("name");
   const [playerName, setPlayerName] = useState("");
   const [index, setIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
@@ -22,15 +22,13 @@ export default function Home() {
   const [score, setScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
 
-  // Load leaderboard from localStorage
+  // Load leaderboard
   useEffect(() => {
     const saved = localStorage.getItem("leaderboard");
-    if (saved) {
-      setLeaderboard(JSON.parse(saved));
-    }
+    if (saved) setLeaderboard(JSON.parse(saved));
   }, []);
 
-  // Save leaderboard to localStorage
+  // Save leaderboard
   useEffect(() => {
     localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
   }, [leaderboard]);
@@ -44,7 +42,11 @@ export default function Home() {
   }
 
   function finishQuiz() {
-    const newEntry = { name: playerName, score, date: new Date().toLocaleString() };
+    const newEntry = {
+      name: playerName,
+      score,
+      date: new Date().toLocaleString()
+    };
     setLeaderboard((prev) => [...prev, newEntry]);
     setScreen("winner");
   }
@@ -75,11 +77,8 @@ export default function Home() {
       setFeedback("");
       setUserAnswer("");
 
-      if (index + 1 >= quiz.length) {
-        finishQuiz();
-      } else {
-        setIndex((prev) => prev + 1);
-      }
+      if (index + 1 >= quiz.length) finishQuiz();
+      else setIndex((prev) => prev + 1);
     }, 1500);
   }
 
@@ -177,7 +176,7 @@ export default function Home() {
           </>
         )}
 
-        {/* QUIZ SCREEN */}
+        {/* QUIZ */}
         {screen === "quiz" && (
           <>
             <h2>Question {index + 1} / {quiz.length}</h2>
